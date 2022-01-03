@@ -1,6 +1,14 @@
 # GPU benchmark
 
+## Memory Load
 
+|Device             |           |  RTX-2070 |
+|:-----------------:|:---------:|:---------:|
+|L1 latency         |cycle      | TBD |
+|L1 size            |bytes      | TBD  |
+|L2 latency         |cycle      | TBD |
+|L2 size            |bytes      | TBD  |
+|global latency     |cycle      | TBD |
 
 
 
