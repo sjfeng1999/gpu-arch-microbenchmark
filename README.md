@@ -1,5 +1,10 @@
 # GPU benchmark
 
+
+## Pre
+`nvidia-smi lgd MIN_CLOCK_RATE,MAX_CLOCK_RATE`
+in RTX-2070, it's both 1860MHz.
+
 ## Memory Load
 
 |Device             |           |  RTX-2070 |

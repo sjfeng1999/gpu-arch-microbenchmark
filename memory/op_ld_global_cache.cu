@@ -1,8 +1,6 @@
 #include <iostream>
 #include <cuda.h>
 
-using std::cout;
-using std::endl;
 
 __forceinline__ __device__ uint32_t get_clock(){
     uint32_t clock;
@@ -45,6 +43,33 @@ __forceinline__ __device__ void bar_sync(){
         "bar.sync   0; \n\t"
     );
 }
+
+
+__global__ void ld_global_cg(float *A, float *B, uint32_t *cost, size_t size){
+    int tid = threadIdx.x;
+    uint32_t start, stop;
+
+    float sink = 0;
+    float *ptr;
+    ptrdiff_t offset = 0;
+    for (int i = 0; i < size; ++i){
+        offset = i;
+        ptr = A + offset;
+        start = get_clock();
+        asm volatile(
+            "ld.global.cg.f32   %0,     [%1]; \n\t"
+            :"=f"(sink):"l"(ptr):"memory"
+        );
+
+        bar_sync();
+        stop = get_clock();
+        cost[i] = stop - start;
+        sink += 1.0;
+    }
+    __syncthreads();
+    B[tid] = sink;
+}
+
 
 __global__ void ld_global_ca(float *A, float *B, uint32_t *cost, size_t size){
     int tid = threadIdx.x;
