@@ -1,0 +1,28 @@
+<params>
+input, 8
+cost, 8
+</params>
+
+<regs>
+0:  start
+1:  stop
+2:  elapsed
+3:  cost_offset
+4:  cost_base
+5:  input_base
+6:  input_offset
+7-10: vA, vB, vC, vD
+</regs>
+
+--:-:-:-:1      MOV         cost_base,      cost;
+--:-:-:-:1      MOV         input_base,     input;
+--:-:-:-:1      CS2R        start,       SR_CLOCKLO;
+--:-:-:-:1      LDG.E.STRONG vA,     [input_base];
+--:-:-:-:1      LDG.E.STRONG vB,     [input_base + 0x1];
+--:-:-:-:1      LDG.E.STRONG vC,     [input_base + 0x2];
+--:-:-:-:1      LDG.E.STRONG vD,     [input_base + 0x3];
+--:-:-:-:1      BAR.SYNC    0x0;
+--:-:-:-:1      CS2R         stop,        SR_CLOCKLO;
+--:-:-:-:1      IADD        elapsed,     start,       -stop;
+--:-:-:-:1      IADD        offset,      cost_base,   0x4;
+--:-:-:-:1      STD.E.SYS   cost[offset],  elapsed;
