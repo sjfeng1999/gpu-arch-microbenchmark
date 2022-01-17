@@ -18,20 +18,31 @@ cost, 8
 17: im8
 </regs>
 
---:-:-:-:1      MOV cost_base_lo, cost[0];
---:-:-:-:1      MOV cost_base_hi, cost[1];
---:-:-:-:8      MOV input_base_lo, input[0];
---:-:-:-:8      MOV input_base_hi, input[1];
---:-:0:-:2      LDG.E.STRONG.CTA vA, [input_base_lo];
-01:-:-:-:6      CS2R s0, SR_CLOCKLO;
---:-:0:-:2      LDG.E.STRONG.CTA vB, [input_base_lo+0x4];
---:-:0:-:2      LDG.E.STRONG.CTA vC, [input_base_lo+0x8];
---:-:0:-:2      LDG.E.STRONG.CTA vD, [input_base_lo+0xc];
---:-:-:-:2      DEPBAR.LE SB0, 0x0;
---:-:-:-:2      BAR.SYNC 0x0;
---:-:-:-:6      CS2R s1, SR_CLOCKLO;
---:-:1:-:6      IADD3 vA, vB, vC, vD;
---:-:2:-:6      IADD3 e1, -s0, s1, RZ;
-02:-:-:-:2      STG.E.GPU [input_base_lo], vA;
-04:-:-:-:2      STG.E.GPU [cost_base_lo], e1;
---:-:-:-:1      EXIT;
+
+--:-:-:-:2    MOV cost_base_lo, cost[0];
+--:-:-:-:2    MOV cost_base_hi, cost[1];
+--:-:-:-:2    MOV input_base_lo, input[0];
+--:-:-:-:2    MOV input_base_hi, input[1];
+--:-:-:-:2    MOV im8, 0x8;
+
+
+--:-:-:-:2    CS2R s0, SR_CLOCKLO;
+
+--:-:0:-:2    LDG.E.STRONG.CTA vA, [input_base_lo];
+01:-:-:-:2    CS2R s1, SR_CLOCKLO;
+
+--:-:0:-:2    LDG.E.STRONG.CTA vB, [input_base_lo+0x4];
+01:-:-:-:2    CS2R s2, SR_CLOCKLO;
+
+--:-:0:-:2    LDG.E.STRONG.CTA vC, [input_base_lo+0x8];
+01:-:-:-:2    CS2R s3, SR_CLOCKLO;
+
+--:-:-:-:2    IADD3 vA, vA, vB, vC;
+--:-:-:-:2    IADD3 e1, s1, -s0, RZ;
+--:-:-:-:2    IADD3 e2, s2, -s1, RZ;
+--:-:-:-:2    IADD3 e3, s3, -s2, RZ;
+--:-:-:-:2    STG.E.SYS [input_base_lo], vA;
+--:-:-:-:2    STG.E.SYS [cost_base_lo], e1;
+--:-:-:-:2    STG.E.SYS [cost_base_lo+0x4], e2;
+--:-:-:-:1    STG.E.SYS [cost_base_lo+0x8], e3;
+--:-:-:-:2    EXIT;
