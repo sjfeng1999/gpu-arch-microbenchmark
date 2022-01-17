@@ -1,2 +1,7 @@
 .ipynb_checkpoints/
 paradigm*
+pre_*
+human_*
+
+*.out
+*.cubin

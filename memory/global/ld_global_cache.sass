@@ -1,0 +1,37 @@
+<params>
+input, 8
+cost, 8
+</params>
+
+<regs>
+0:  cost_base_lo
+1:  cost_base_hi
+2:  input_base_lo
+3:  input_base_hi
+4:  cost_offset
+5:  input_offset
+6-9: vA, vB, vC, vD
+10: s0
+11-12: s1, e1
+13-14: s2, e2
+15-16: s3, e3
+17: im8
+</regs>
+
+--:-:-:-:1      MOV cost_base_lo, cost[0];
+--:-:-:-:1      MOV cost_base_hi, cost[1];
+--:-:-:-:8      MOV input_base_lo, input[0];
+--:-:-:-:8      MOV input_base_hi, input[1];
+--:-:0:-:2      LDG.E.STRONG.CTA vA, [input_base_lo];
+01:-:-:-:6      CS2R s0, SR_CLOCKLO;
+--:-:0:-:2      LDG.E.STRONG.CTA vB, [input_base_lo+0x4];
+--:-:0:-:2      LDG.E.STRONG.CTA vC, [input_base_lo+0x8];
+--:-:0:-:2      LDG.E.STRONG.CTA vD, [input_base_lo+0xc];
+--:-:-:-:2      DEPBAR.LE SB0, 0x0;
+--:-:-:-:2      BAR.SYNC 0x0;
+--:-:-:-:6      CS2R s1, SR_CLOCKLO;
+--:-:1:-:6      IADD3 vA, vB, vC, vD;
+--:-:2:-:6      IADD3 e1, -s0, s1, RZ;
+02:-:-:-:2      STG.E.GPU [input_base_lo], vA;
+04:-:-:-:2      STG.E.GPU [cost_base_lo], e1;
+--:-:-:-:1      EXIT;
