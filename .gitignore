@@ -1,4 +1,5 @@
 .ipynb_checkpoints/
+.vscode/
 build/
 
 paradigm*
@@ -6,4 +7,3 @@ pre_*
 human_*
 
 *.out
-*.cubin
