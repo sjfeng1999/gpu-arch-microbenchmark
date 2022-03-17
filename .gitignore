@@ -1,4 +1,6 @@
 .ipynb_checkpoints/
+build/
+
 paradigm*
 pre_*
 human_*
