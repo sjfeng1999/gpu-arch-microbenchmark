@@ -1,8 +1,8 @@
 .ipynb_checkpoints/
 .vscode/
 build/
+turingas/
 
-paradigm*
 pre_*
 human_*
 
