@@ -17,23 +17,29 @@ __global__ void latencyDetectKernel(float* input, float* output, uint32_t* clock
     // float val[16];
 
     asm volatile (
-        ".reg.f32   val1, val2;                         \n\t"
-        ".reg.u32   c_1, c_2, c_3;                      \n\t"
-        ".reg.u32   e_1, e_2;                           \n\t"
+        ".reg.f32   val1, val2, val3;                   \n\t"
+        ".reg.u32   c_1, c_2, c_3, c_4;                 \n\t"
+        ".reg.u32   e_1, e_2, e_3;                      \n\t"
 
         "mov.u32    c_1, %%clock;                       \n\t"
-        "ld.global.ca.f32    val1,    [%0];             \n\t"
+        "ld.global.cg.f32    val1,    [%0];             \n\t"
         "mov.u32    c_2,   %%clock;                     \n\t"
         "ld.global.ca.f32    val2,    [%0 + 4];         \n\t"
-
         "mov.u32    c_3,   %%clock;                     \n\t"
+        "ld.global.ca.f32    val3,    [%0 + 8];         \n\t"
+        "mov.u32    c_4,   %%clock;                     \n\t"
+
         "sub.u32    e_1, c_2, c_1;                      \n\t"
-        "st.global.u32    [%2], e_1;                    \n\t"
         "sub.u32    e_2, c_3, c_2;                      \n\t"
+        "sub.u32    e_3, c_4, c_3;                      \n\t"
+        
+        "st.global.u32    [%2], e_1;                    \n\t"
         "st.global.u32    [%2 + 4], e_2;                \n\t"
+        "st.global.u32    [%2 + 8], e_3;                \n\t"
 
         "st.global.f32    [%1], val1;                   \n\t"
         "st.global.f32    [%1 + 4], val2;               \n\t"
+        "st.global.f32    [%1 + 8], val3;               \n\t"
         ::"l"(input),"l"(output),"l"(clock):"memory"
     );
 
@@ -80,8 +86,8 @@ int main(){
     // printf("Constant Memory Latency =\t %3d cycle\n", clock_h[1]);
     // printf("Constant L1 Cache  Latency =\t %3d cycle\n", clock_h[1]);
     // printf("Constant L2 Cache  Latency =\t %3d cycle\n", clock_h[1]);
-    printf("        L1 Cache Latency \t= %3u cycle\n", clock_h[1]);
-    // printf("L2 Cache Latency =\t %3d cycle\n", clock_h[3]);
+    printf("        L2 Cache Latency \t= %3d cycle\n", clock_h[1]);
+    printf("        L1 Cache Latency \t= %3u cycle\n", clock_h[2]);
     
 
     latencyDetectKernel<<<gDim, bDim>>>(input_d, output_d, clock_d);
@@ -94,7 +100,7 @@ int main(){
     // printf("Constant Memory Latency =\t %3d cycle\n", clock_h[1]);
     // printf("Constant L1 Cache  Latency =\t %3d cycle\n", clock_h[1]);
     // printf("Constant L2 Cache  Latency =\t %3d cycle\n", clock_h[1]);
-    printf("        L1 Cache Latency \t= %3u cycle\n", clock_h[1]);
-    // printf("L2 Cache Latency =\t %3d cycle\n", clock_h[3]);
+    printf("        L2 Cache Latency \t= %3d cycle\n", clock_h[1]);
+    printf("        L1 Cache Latency \t= %3u cycle\n", clock_h[2]);
     return 0;
 }

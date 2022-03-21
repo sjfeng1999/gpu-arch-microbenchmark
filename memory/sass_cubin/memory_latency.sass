@@ -13,7 +13,7 @@ clock, 8
 5: clock_hi
 6-9: c1, c2, c3, c4
 10-13: vA, vB, vC, vD
-14-15: e1, e2
+14-16: e1, e2, e3
 </regs>
 
 --:-:-:-:2      MOV input_lo, input[0];
@@ -23,21 +23,20 @@ clock, 8
 --:-:-:-:2      MOV clock_lo, clock[0];
 --:-:-:-:4      MOV clock_hi, clock[1];
 
---:-:-:-:4      CS2R c1, SR_CLOCKLO;
---:-:0:-:2      LDG.E.STRONG vA, [input_lo];
-
-01:-:-:-:4      CS2R c2, SR_CLOCKLO;
---:-:1:-:2      LDG.E.STRONG vB, [input_lo+0x4];
-
-02:-:-:-:4      CS2R c3, SR_CLOCKLO;
---:-:2:-:2      LDG.E.STRONG vC, [input_lo+0x8];
-
-04:-:0:-:4      CS2R c4, SR_CLOCKLO;
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+--:-:0:-:2      LDG.E.STRONG.GPU vA, [input_lo];
+01:-:-:-:2      CS2R c2, SR_CLOCKLO;
+--:-:1:-:2      LDG.E.STRONG.CTA vB, [input_lo+0x4];
+02:-:-:-:2      CS2R c3, SR_CLOCKLO;
+--:-:2:-:2      LDG.E.STRONG.CTA vC, [input_lo+0x8];
+04:-:0:-:2      CS2R c4, SR_CLOCKLO;
 
 --:-:-:-:2      BAR.SYNC 0x0;
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;
+--:-:-:-:4      IADD3 e3, c4, -c3, RZ;
 --:-:-:-:4      STG.E.SYS [clock_lo], e1;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x4], e2;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x8], e3;
 --:-:-:-:2      EXIT;
