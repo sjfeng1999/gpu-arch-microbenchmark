@@ -7,4 +7,4 @@
 
 #define UPPER_DIV(x, y)        ((x + y - 1) / y)
 
-constexpr int kWarpSize = 32
+constexpr int kWarpSize = 32;

@@ -49,7 +49,7 @@ __forceinline__ __device__ uint32_t get_global_warpid(){
     uint32_t global_warpid;
     uint32_t local_warpid = get_warpid();
     uint32_t block_id = blockIdx.x + blockIdx.y * gridDim.x + blockIdx.z * gridDim.x * gridDim.y;
-    uint32_t warp_per_block = UPPER_DIV(blockDim.x * blockDim.y * blockDim.z, WARP_SIZE);
+    uint32_t warp_per_block = UPPER_DIV(blockDim.x * blockDim.y * blockDim.z, kWarpSize);
     global_warpid = block_id * warp_per_block + local_warpid;
     return global_warpid;
 }
