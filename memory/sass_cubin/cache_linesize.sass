@@ -1,0 +1,53 @@
+<params>
+input, 8
+output, 8
+clock, 8
+</params>
+
+<regs>
+0: input_lo
+1: input_hi
+2: output_lo
+3: output_hi
+4: clock_lo
+5: clock_hi
+6-48 ~ e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35
+49: vA
+50-96 ~ c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35
+</regs>
+
+--:-:-:-:2      MOV input_lo, input[0];
+--:-:-:-:2      MOV input_hi, input[1];
+--:-:-:-:2      MOV output_lo, output[0];
+--:-:-:-:2      MOV output_hi, output[1];
+--:-:-:-:2      MOV clock_lo, clock[0];
+--:-:-:-:4      MOV clock_hi, clock[1];
+
+--:-:-:-:2      CS2R c0, SR_CLOCKLO;
+
+<CODE>
+SASS_CODE = []
+
+loop_size = 35
+
+LDG  = "--:-:0:-:2      LDG.E.STRONG.CTA vA, [input_lo+{:}];"
+CS2R = "01:-:-:-:2      CS2R c{:}, SR_CLOCKLO;"
+IADD = "--:-:-:-:4      IADD3 e{:}, c{:}, -c{:}, RZ;"
+STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e{:};"
+BAR  = "--:-:-:-:2      BAR.SYNC 0x0;"
+
+for i in range(loop_size):
+    SASS_CODE += [LDG.format(hex(i * 4))]
+    SASS_CODE += [CS2R.format(i+1)]
+
+SASS_CODE += [BAR]
+for i in range(loop_size):
+    SASS_CODE += [IADD.format(i, i+1, i)]
+
+for i in range(loop_size):
+    SASS_CODE += [STG.format(hex(i*4), i)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+--:-:-:-:2      EXIT;
