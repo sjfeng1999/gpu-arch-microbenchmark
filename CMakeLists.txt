@@ -5,9 +5,11 @@ project(gpu-microbenchmark
 
 enable_language(CUDA)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/memory)
+set(CMAKE_NVCC_FLAGS "-O0")
 
-set(MICROBENCHMARK_SRC memory/memory_latency.cu)
+set(MICROBENCHMARK_SRC memory/memory_latency.cu
+                       memory/cache_linesize.cu)
 
 
 message(STATUS ">>> GPU Microbenchmark")
