@@ -2,9 +2,9 @@
 .vscode/
 build/
 turingas/
+bin/
 
 pre_*
 human_*
 
 *.out
-*.cubin

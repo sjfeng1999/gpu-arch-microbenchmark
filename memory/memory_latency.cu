@@ -100,7 +100,7 @@ int main(){
     dim3 bDim(2, 1, 1);
 
     void* kernel_args[4] = {&input_d, &output_d, &clock_d, &cinput};
-    const char* cubin_name = "./sass_cubin/memory_latency_75.cubin";
+    const char* cubin_name = "../sass_cubin/memory_latency_75.cubin";
     const char* kernel_name = "latencyDetect";
 
     launchSassKernel(cubin_name, kernel_name, gDim, bDim, kernel_args);

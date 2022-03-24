@@ -73,7 +73,7 @@ int main(){
     dim3 bDim(1, 1, 1);
 
     void* kernel_args[3] = {&input_d, &output_d, &clock_d};
-    const char* cubin_name = "./sass_cubin/cache_linesize_75.cubin";
+    const char* cubin_name = "../sass_cubin/cache_linesize_75.cubin";
     const char* kernel_name = "linesizeDetect";
 
     launchSassKernel(cubin_name, kernel_name, gDim, bDim, kernel_args);
