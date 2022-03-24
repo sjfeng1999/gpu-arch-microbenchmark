@@ -9,7 +9,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
 set(CMAKE_NVCC_FLAGS "-O0")
 
 set(MICROBENCHMARK_SRC memory/memory_latency.cu
-                       memory/cache_linesize.cu)
+                       memory/cache_linesize.cu
+                       miscellany/reg_bankconflict.cu)
 
 
 message(STATUS ">>> GPU Microbenchmark")
