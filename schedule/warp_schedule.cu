@@ -1,180 +1,85 @@
-// warp exec position
+// 
+//
+//
+//
 
-#include <iostream>
-#include <cuda.h>
+#include "cuda.h"
+#include "utils.cuh"
 
-__forceinline__ __device__ uint32_t get_warpid(){
-    uint32_t clock;
-    asm volatile(
-        "mov.u32    %0,     %%warpid; \n\t"
-        :"=r"(clock)::"memory"
-    );
-    return clock;
-}
-template <int M, int N>
-__global__ void warp_workload(float *A, float *B){
+
+__global__ void warpScheduleKernel(float* input, float* output, uint* clock, const int run_warp){
     int tid = threadIdx.x;
-    int warpid = get_warpid();
-    if (warpid == M or warpid == N){
-        float dummy = 0;
-        float vA[4], vB[4], vC[4], vD[4];
-        float *ptr;
-        ptrdiff_t offset = 0;
+    int laneid = tid & 0x1f;
+    int warpid = tid >> 5;
 
-        #pragma unroll
-        for (int i = 0; i < 32; ++i){
-            offset = i * 4;
-            ptr = A + offset;
-
-            asm volatile(
-                "ld.global.ca.f32   %0,     [%4];       \n\t"
-                "ld.global.ca.f32   %1,     [%4+4];     \n\t"
-                "ld.global.ca.f32   %2,     [%4+8];     \n\t"
-                "ld.global.ca.f32   %3,     [%4+12];    \n\t"
-                :"=f"(vA[0]),"=f"(vB[0]),"=f"(vC[0]),"=f"(vD[0])
-                :"l"(ptr):"memory"
-            );
-            dummy += vA[0];
-            dummy += vB[0];
-            dummy += vC[0];
-            dummy += vD[0];
-        }
-        B[tid] = dummy;
+    if (warpid != 0 and warpid != run_warp){
+        ptxExit();
     }
+
+    input += tid;
+    clock += 32 * warpid / run_warp;
+
+    float acc = 0;
+
+    uint c1 = getClock();
+
+    #pragma unroll
+    for (int i = 0; i < 128; ++i){
+        acc += input[i] * input[i];
+    }
+
+    uint c2 = getClock();
+    clock[laneid] = c2 - c1;
+    output[laneid] = acc;
+}
+
+uint sumArray(uint* array, int size){
+    uint acc = 0;
+    for (int i = 0; i < size; ++i){
+        acc += array[i];
+    }
+    return acc;
 }
 
 
-int main() {
-    size_t width = 512;
-    size_t bytes = 4 * width;
+int main(){
 
-    dim3 bDim(256);
-    dim3 gDim(1);
+    float* input_h; 
+    float* input_d;
+    float* output_h;
+    float* output_d;
+    uint32_t* clock_h;
+    uint32_t* clock_d;
 
-    float *h_A, *h_B;
-    float *d_A, *d_B;
-    uint32_t *h_cost, *d_cost;
+    int size = 1024;
 
-    h_A = static_cast<float*>(malloc(bytes));
-    h_B = static_cast<float*>(malloc(bytes));
-    h_cost = static_cast<uint32_t*>(malloc(bytes));
-    cudaMalloc(&d_A, bytes);
-    cudaMalloc(&d_B, bytes);
-    cudaMalloc(&d_cost, bytes);
+    input_h     = static_cast<float*>(malloc(sizeof(float) * size));
+    output_h    = static_cast<float*>(malloc(sizeof(float) * size));
+    clock_h     = static_cast<uint32_t*>(malloc(sizeof(uint32_t) * size));
 
-    for (int i = 0; i < width; ++i) {
-        h_A[i] = i;
+
+    cudaMalloc(&input_d,  sizeof(float) * size);
+    cudaMalloc(&output_d, sizeof(float) * size);
+    cudaMalloc(&clock_d,  sizeof(uint32_t) * size);
+
+    cudaMemcpy(input_d, input_h, sizeof(float) * size, cudaMemcpyHostToDevice);
+
+
+    dim3 gDim(1, 1, 1);
+    dim3 bDim(256, 1, 1);
+
+    void* kernel_args[3] = {&input_d, &output_d, &clock_d};
+
+
+
+    printf(">>> CUDA-C Level Warp Scedule Detect\n");
+    for (int i = 1; i < 8; ++i){
+        warpScheduleKernel<<<gDim, bDim>>>(input_d, output_d, clock_d, i);
+        cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
+
+        printf("        Run Warp <0, %d>  Elapsed \t%6u cycle\n", i, sumArray(clock_h, 64));
+        cudaDeviceSynchronize();
     }
-
-    float       totalElapsed;
-    cudaEvent_t start_t, stop_t;
-    cudaEventCreate(&start_t);
-    cudaEventCreate(&stop_t);
-
-    cudaMemcpy(d_A, h_A, bytes, cudaMemcpyHostToDevice);
-    cudaEventRecord(start_t, 0);
-
-    warp_workload<0, 1><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-    cudaEventRecord(start_t, 0);
-
-    warp_workload<0, 2><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
-
-    cudaEventRecord(start_t, 0);
-
-    warp_workload<0, 3><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
-    cudaEventRecord(start_t, 0);
-    warp_workload<0, 4><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
-
-    cudaEventRecord(start_t, 0);
-    warp_workload<0, 5><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
-
-
-    cudaEventRecord(start_t, 0);
-    warp_workload<0, 6><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
-
-    cudaEventRecord(start_t, 0);
-    warp_workload<0, 7><<<gDim, bDim>>>(d_A, d_B);
-    printf(cudaGetErrorString(cudaGetLastError()));
-
-    cudaEventRecord(stop_t, 0);
-    cudaEventSynchronize(stop_t);
-    cudaMemcpy(h_B, d_B, bytes, cudaMemcpyDeviceToHost);
-
-    cudaEventElapsedTime(&totalElapsed, start_t, stop_t);
-    printf("\nHost Time Elapsed %f ms", totalElapsed);
-
-
-
-
 
     return 0;
 }
