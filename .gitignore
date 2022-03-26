@@ -1,10 +1,9 @@
 .ipynb_checkpoints/
 .vscode/
-build/
-turingas/
-bin/
 
-pre_*
-human_*
+build/
+bin/
+turingas/
 
 *.out
+*.cubin

@@ -36,8 +36,8 @@ int main(){
     void* kernel_args[3] = {&input_d, &output_d, &clock_d};
 
 
-    const char* cubin_name1 = "../sass_cubin/reg_with_bankconflict_75.cubin";
-    const char* kernel_name1 = "regWithBankConflict";
+    const char* cubin_name1 = "../sass_cubin/reg_with_bankconflict.cubin";
+    const char* kernel_name1 = "regWithBankconflict";
     launchSassKernel(cubin_name1, kernel_name1, gDim, bDim, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
 
@@ -47,8 +47,8 @@ int main(){
 
 
 
-    const char* cubin_name2 = "../sass_cubin/reg_without_bankconflict_75.cubin";
-    const char* kernel_name2 = "regWithoutBankConflict";
+    const char* cubin_name2 = "../sass_cubin/reg_without_bankconflict.cubin";
+    const char* kernel_name2 = "regWithoutBankconflict";
     launchSassKernel(cubin_name2, kernel_name2, gDim, bDim, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
 

@@ -100,13 +100,13 @@ int main(){
     dim3 bDim(2, 1, 1);
 
     void* kernel_args[4] = {&input_d, &output_d, &clock_d, &cinput};
-    const char* cubin_name = "../sass_cubin/memory_latency_75.cubin";
-    const char* kernel_name = "latencyDetect";
+    const char* cubin_name = "../sass_cubin/memory_latency.cubin";
+    const char* kernel_name = "memoryLatency";
 
     launchSassKernel(cubin_name, kernel_name, gDim, bDim, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
 
-    printf(">>> SASS-Level Detect Latency Result\n");
+    printf(">>> SASS-Level Memory Latency Result\n");
     printf("        Global   Memory   Latency \t= %3u cycle\n", clock_h[0]);
     printf("        Global   L2-Cache Latency \t= %3u cycle\n", clock_h[1]);
     printf("        Global   L1-Cache Latency \t= %3u cycle\n", clock_h[2]);
@@ -121,7 +121,7 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
 
     printf("\n");
-    printf(">>> CUDA C-Level Detect Latency Result\n");
+    printf(">>> CUDA-C Level Memory Latency Result\n");
     printf("        Global   Memory   Latency \t= %3u cycle\n", clock_h[0]);
     printf("        Global   L2-Cache Latency \t= %3u cycle\n", clock_h[1]);
     printf("        Global   L1-Cache Latency \t= %3u cycle\n", clock_h[2]);

@@ -73,13 +73,13 @@ int main(){
     dim3 bDim(1, 1, 1);
 
     void* kernel_args[3] = {&input_d, &output_d, &clock_d};
-    const char* cubin_name = "../sass_cubin/cache_linesize_75.cubin";
-    const char* kernel_name = "linesizeDetect";
+    const char* cubin_name = "../sass_cubin/cache_linesize.cubin";
+    const char* kernel_name = "cacheLinesize";
 
     launchSassKernel(cubin_name, kernel_name, gDim, bDim, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
 
-    printf(">>> SASS-Level Detect Latency Result\n");
+    printf(">>> SASS Level Detect Latency Result\n");
     // printf("        L2 Linesize \t= %3d B\n", clock_h[1]);
     printf("        L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, size));
 
@@ -89,7 +89,7 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
 
     printf("\n");
-    printf(">>> CUDA C-Level Detect Latency Result\n");
+    printf(">>> CUDA-C Level Detect Latency Result\n");
     // printf("        L2 Linesize \t= %3d B\n", clock_h[1]);
     printf("        L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, size));
     return 0;
