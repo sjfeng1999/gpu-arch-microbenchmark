@@ -21,10 +21,12 @@
 |Global Latency              |cycle      | TBD       |
 |L2 Latency                  |cycle      | 236       |
 |L1 Latency                  |cycle      | 32        |  
-|Constant Latency            |cycle      | 465       |
-|Constant L2 Latency         |cycle      | 65        |
-|Constant L1 Latency         |cycle      | 7         |  
+|Shared Latency              |cycle      | 23        |  
+|Constant Latency            |cycle      | 448       |
+|Constant L2 Latency         |cycle      | 62        |
+|Constant L1 Latency         |cycle      | 4         |  
 
+- const L1-cache is as fast as register.
 
 ### 2. Cache Linesize
 

@@ -33,13 +33,14 @@ int main(){
     dim3 gDim(1, 1, 1);
     dim3 bDim(1, 1, 1);
 
-    void* kernel_args[3] = {&input_d, &output_d, &clock_d};
+    void* kernel_args[] = {&input_d, &output_d, &clock_d};
 
 
     const char* cubin_name1 = "../sass_cubin/reg_with_bankconflict.cubin";
     const char* kernel_name1 = "regWithBankconflict";
-    launchSassKernel(cubin_name1, kernel_name1, gDim, bDim, kernel_args);
+    launchSassKernel(cubin_name1, kernel_name1, gDim, bDim, 0, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
 
     printf(">>> SASS-Level Reg With    BankConflict IPC Result\n");
     printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 128);
@@ -49,8 +50,9 @@ int main(){
 
     const char* cubin_name2 = "../sass_cubin/reg_without_bankconflict.cubin";
     const char* kernel_name2 = "regWithoutBankconflict";
-    launchSassKernel(cubin_name2, kernel_name2, gDim, bDim, kernel_args);
+    launchSassKernel(cubin_name2, kernel_name2, gDim, bDim, 0, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
 
     printf(">>> SASS-Level Reg Without BankConflict IPC Result\n");
     printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 128);

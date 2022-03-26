@@ -8,7 +8,7 @@
 #include "cuda.h"
 #include "cuda_runtime.h"
 
-cudaError_t launchSassKernel(const char* cubin_name, const char* kernel_name, dim3 gDim, dim3 bDim, void** args){
+cudaError_t launchSassKernel(const char* cubin_name, const char* kernel_name, dim3 gDim, dim3 bDim, int shared_bytes, void** args){
     CUmodule module;
     CUfunction kernel;
 
@@ -18,7 +18,7 @@ cudaError_t launchSassKernel(const char* cubin_name, const char* kernel_name, di
     cuLaunchKernel(kernel, 
                    gDim.x, gDim.y, gDim.z,
                    bDim.x, bDim.y, bDim.z,
-                   0, // SharedMem Bytes
+                   shared_bytes, // SharedMem Bytes
                    0, // Stream
                    args, 0);
 

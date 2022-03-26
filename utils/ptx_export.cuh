@@ -45,9 +45,14 @@ __forceinline__ __device__ uint32_t getLaneid(){
     return laneid;
 }
 
-
 __forceinline__ __device__ void barSync(){
     asm volatile(
         "bar.sync   0; \n\t"
+    );
+}
+
+__forceinline__ __device__ void ptxExit(){
+    asm volatile(
+        "exit; \n\t"
     );
 }

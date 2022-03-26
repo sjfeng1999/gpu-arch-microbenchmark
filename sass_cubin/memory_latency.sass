@@ -11,10 +11,13 @@ clock, 8
 3: output_hi
 4: clock_lo
 5: clock_hi
-6-9: c1, c2, c3, c4
+6-9: c<1-4>
 10-13: vA, vB, vC, vD
-14-16: e1, e2, e3
-17-64 ~ x1, x2, x3
+14-17: e1, e2, e3, e4
+18-20: x1, x2, x3
+21-25 ~ tid, warpid, tid32
+32-35 ~ a0, a1, a2, a3
+36-42 ~ smem1, smem2, smem3, e_s1, e_s2
 </regs>
 
 <consts>
@@ -26,15 +29,15 @@ const_a, 8
 --:-:-:-:2      MOV clock_lo, clock[0];
 --:-:-:-:4      MOV clock_hi, clock[1];
 
+
+
 --:-:-:-:2      CS2R c1, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.GPU vA, [input_lo];
 01:-:-:-:2      CS2R c2, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.CTA vB, [input_lo+0x4];
 01:-:-:-:2      CS2R c3, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.CTA vC, [input_lo+0x8];
-01:-:0:-:2      CS2R c4, SR_CLOCKLO;
-
---:-:-:-:2      BAR.SYNC 0x0;
+01:-:-:-:2      CS2R c4, SR_CLOCKLO;
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;
@@ -43,22 +46,30 @@ const_a, 8
 --:-:-:-:4      STG.E.SYS [clock_lo+0x4], e2;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x8], e3;
 
+--:-:-:-:6      NOP;
 
 --:-:-:-:2      CS2R c1, SR_CLOCKLO;
---:-:1:-:5      LDC.E x1, const_a[0];
+--:-:1:-:2      LDC.E x1, const_a[0];
 02:-:-:-:2      CS2R c2, SR_CLOCKLO;
---:-:1:-:5      MOV x2, const_a[1];
+--:-:1:-:2      MOV x2, const_a[1];
 02:-:-:-:2      CS2R c3, SR_CLOCKLO;
---:-:1:-:5      MOV x3, const_a[2];
+--:-:1:-:2      MOV x3, const_a[2];
 02:-:-:-:2      CS2R c4, SR_CLOCKLO;
-
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;
 --:-:-:-:4      IADD3 e3, c4, -c3, RZ;
-
 --:-:-:-:4      STG.E.SYS [clock_lo+0xc], e1;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x10], e2;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x14], e3;
+
+--:-:-:-:6      NOP;
+
+--:-:-:-:2      CS2R smem1, SR_CLOCKLO;
+--:-:0:-:2      LDS x1, [RZ+0x0];
+01:-:-:-:4      CS2R smem2, SR_CLOCKLO;
+
+--:-:-:-:5      IADD3 e_s1, smem2, -smem1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x18], e_s1;
 
 --:-:-:-:2      EXIT;
