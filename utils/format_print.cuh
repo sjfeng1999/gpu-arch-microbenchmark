@@ -7,7 +7,7 @@
 
 #include "stdio.h"
 
-void format_array(float *array, int size, int newline=10){
+void formatArray(float* array, int size, int newline=10){
     for (int i = 0; i < size; ++i){
         printf("%.3f, ", array[i]);
         if (i % newline == newline - 1){
@@ -17,7 +17,7 @@ void format_array(float *array, int size, int newline=10){
     printf("\n\t");
 }
 
-void format_array(uint32_t *array, int size, int newline=10){
+void formatArray(uint* array, int size, int newline=10){
     for (int i = 0; i < size; ++i){
         printf("%3u, ", array[i]);
         if (i % newline == newline - 1){
@@ -27,7 +27,7 @@ void format_array(uint32_t *array, int size, int newline=10){
     printf("\n\t");
 }
 
-void format_array(int32_t *array, int size, int newline=10){
+void formatArray(int* array, int size, int newline=10){
     for (int i = 0; i < size; ++i){
         printf("%3u, ", array[i]);
         if (i % newline == newline - 1){

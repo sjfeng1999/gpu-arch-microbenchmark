@@ -107,7 +107,6 @@ int main(){
     launchSassKernel(cubin_name, kernel_name, gDim, bDim, size * sizeof(float), kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
-    printf(cudaGetErrorString(cudaGetLastError()));
 
     printf(">>> SASS Level Shared Load BankConflict Result\n");
     printf("        Single           Load [0x100]                   Elapsed \t%3u cycle\n", clock_h[0]);
