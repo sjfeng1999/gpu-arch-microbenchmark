@@ -118,7 +118,7 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
 
-    printf(">>> SASS-Level Memory Latency Result\n");
+    printf(">>> SASS Level Memory Latency Result\n");
     printf("        Global   Memory   Latency \t= %3u cycle\n", clock_h[0]);
     printf("        Global   L2-Cache Latency \t= %3u cycle\n", clock_h[1]);
     printf("        Global   L1-Cache Latency \t= %3u cycle\n", clock_h[2]);

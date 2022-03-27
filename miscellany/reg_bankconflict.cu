@@ -41,8 +41,7 @@ int main(){
     launchSassKernel(cubin_name1, kernel_name1, gDim, bDim, 0, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
-
-    printf(">>> SASS-Level Reg With    BankConflict IPC Result\n");
+    printf(">>> SASS Level Reg With    BankConflict IPC Result\n");
     printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 128);
     
 
@@ -53,8 +52,8 @@ int main(){
     launchSassKernel(cubin_name2, kernel_name2, gDim, bDim, 0, kernel_args);
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
-
-    printf(">>> SASS-Level Reg Without BankConflict IPC Result\n");
+    printf("\n");
+    printf(">>> SASS Level Reg Without BankConflict IPC Result\n");
     printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 128);
 
     return 0;

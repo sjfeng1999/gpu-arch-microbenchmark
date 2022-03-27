@@ -109,7 +109,7 @@ int main(){
     cudaDeviceSynchronize();
     printf(cudaGetErrorString(cudaGetLastError()));
 
-    printf(">>> SASS Level Shared Load BankConflict Detect\n");
+    printf(">>> SASS Level Shared Load BankConflict Result\n");
     printf("        Single           Load [0x100]                   Elapsed \t%3u cycle\n", clock_h[0]);
     printf("        Vector           Load [0x0, 0x4 , 0x8  , 0xc  ] Elapsed \t%3u cycle\n", clock_h[1]);
     printf("        WithConflict     Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[2]);
@@ -120,7 +120,7 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     printf("\n");
-    printf(">>> CUDA-C Level Shared Load BankConflict Detect\n");
+    printf(">>> CUDA-C Level Shared Load BankConflict Result\n");
     printf("        Single           Load [0x100]                   Elapsed \t%3u cycle\n", clock_h[0]);
     printf("        Vector           Load [0x0, 0x4 , 0x8  , 0xc  ] Elapsed \t%3u cycle\n", clock_h[3]);
     printf("        WithConflict     Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[1]);
