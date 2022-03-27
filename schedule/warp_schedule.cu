@@ -19,16 +19,20 @@ __global__ void warpScheduleKernel(float* input, float* output, uint* clock, con
     input += tid;
     clock += 32 * warpid / run_warp;
 
+
+    float array[128];
     float acc = 0;
-
-    uint c1 = getClock();
-
-    #pragma unroll
     for (int i = 0; i < 128; ++i){
-        acc += input[i] * input[i];
+        array[i] = input[i];
     }
 
+    uint c1 = getClock();
+    #pragma unroll
+    for (int i = 0; i < 128; ++i){
+        acc += array[i] * array[i] + 1.0f;
+    }
     uint c2 = getClock();
+
     clock[laneid] = c2 - c1;
     output[laneid] = acc;
 }
@@ -51,7 +55,7 @@ int main(){
     uint32_t* clock_h;
     uint32_t* clock_d;
 
-    int size = 1024;
+    int size = 4096;
 
     input_h     = static_cast<float*>(malloc(sizeof(float) * size));
     output_h    = static_cast<float*>(malloc(sizeof(float) * size));
@@ -68,12 +72,26 @@ int main(){
     dim3 gDim(1, 1, 1);
     dim3 bDim(256, 1, 1);
 
-    void* kernel_args[3] = {&input_d, &output_d, &clock_d};
+    const char* cubin_name = "../sass_cubin/warp_schedule.cubin";
+    const char* kernel_name = "warpSchedule";
 
-
-
-    printf(">>> CUDA-C Level Warp Scedule Detect\n");
+    printf(">>> SASS Level Warp Scedule Detect\n");
     for (int i = 1; i < 8; ++i){
+        void* kernel_args[4] = {&input_d, &output_d, &clock_d, &i};
+        cudaMemset(clock_d, 0, sizeof(uint) * size);
+        launchSassKernel(cubin_name, kernel_name, gDim, bDim, 0, kernel_args);
+        cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
+
+        printf("        Run Warp <0, %d>  Elapsed \t%6u cycle\n", i, sumArray(clock_h, 64));
+        cudaDeviceSynchronize();
+    }
+
+
+
+    printf("\n");
+    printf(">>> CUDA-C Level Warp Schedule Detect\n");
+    for (int i = 1; i < 8; ++i){
+        cudaMemset(clock_d, 0, sizeof(uint) * size);
         warpScheduleKernel<<<gDim, bDim>>>(input_d, output_d, clock_d, i);
         cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
 

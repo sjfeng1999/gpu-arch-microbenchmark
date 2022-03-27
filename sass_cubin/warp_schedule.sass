@@ -1,0 +1,71 @@
+<params>
+input, 8
+output, 8
+clock, 8
+run_warp, 4
+</params>
+
+<regs>
+0: input_lo
+1: input_hi
+2: output_lo
+3: output_hi
+4: clock_lo
+5: clock_hi
+6-7: c1, c2
+8-9: e1, e2
+10-19 ~ clock_offset_lo, clock_offset_hi, tid, warpid, laneid, warp_offset, warpid32
+20-150 ~ v<0-128>
+</regs>
+
+
+--:-:0:-:2      S2R tid, SR_TID.X;
+
+--:-:-:-:2      MOV input_lo, input[0];
+--:-:-:-:2      MOV input_hi, input[1];
+--:-:-:-:2      MOV clock_lo, clock[0];
+--:-:-:-:2      MOV clock_hi, clock[1];
+
+
+01:-:-:-:4      SHF.R.S32.HI warpid, RZ, 0x5, tid;
+
+--:-:-:-:4      ISETP.NE.AND P0, PT, warpid, run_warp, PT;
+--:-:-:-:4      ISETP.EQ.OR P0, PT, warpid, RZ, !P0;
+
+--:-:-:-:5      @!P0 EXIT;
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+
+<CODE>
+REG_FFMA = "--:-:-:-:1      FFMA v0, v{:}, v{:}, v0;"   
+
+SASS_CODE = []
+for i in range(64):
+    reg = i * 2
+    SASS_CODE += [REG_FFMA.format(i, i + 1)]
+
+SASS_CODE += ["--:-:0:-:4      FFMA v0, v1, v2, v0;"]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+01:-:-:-:4      CS2R c2, SR_CLOCKLO;
+
+--:-:-:-:4      SHF.L.S32.HI warpid32, RZ, 0x5, warpid;
+--:-:-:-:5      IADD3 laneid, tid, -warpid32, RZ;
+
+--:-:-:-:4      ISETP.EQ.AND P0, PT, warpid, RZ, PT;
+--:-:-:-:4      @P0 MOV warp_offset, 0x0;
+--:-:-:-:4      @!P0 MOV warp_offset, 0x80;
+
+--:-:-:-:4      BAR.SYNC 0x0;
+
+--:-:-:-:5     IADD3 e1, c2, -c1, RZ;
+
+--:-:0:-:5      IMAD.WIDE clock_offset_lo, laneid, 0x4, clock_lo;
+--:-:-:-:4      MOV clock_offset_hi, clock_hi;
+01:-:-:-:5      IADD3 clock_offset_lo, clock_offset_lo, warp_offset, RZ;
+
+--:-:-:-:4      STG.E.SYS [clock_offset_lo], e1;
+
+--:-:-:-:5      EXIT;

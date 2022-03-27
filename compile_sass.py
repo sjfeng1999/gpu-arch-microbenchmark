@@ -23,7 +23,8 @@ if __name__ == "__main__":
     KERNEL_LIST = ["memory_latency", 
                    "cache_linesize", 
                    "reg_with_bankconflict", "reg_without_bankconflict",
-                   "shared_bankconflict"]
+                   "shared_bankconflict",
+                   "warp_schedule"]
 
     if args.arch not in ARCH_LIST:
         print("Unsupported Gpu Arch: ", args.arch)
