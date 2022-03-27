@@ -37,7 +37,7 @@ const_a, 8
 --:-:0:-:2      LDG.E.STRONG.CTA vB, [input_lo+0x4];
 01:-:-:-:2      CS2R c3, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.CTA vC, [input_lo+0x8];
-01:-:-:-:2      CS2R c4, SR_CLOCKLO;
+01:-:-:-:4      CS2R c4, SR_CLOCKLO;
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;
@@ -54,7 +54,7 @@ const_a, 8
 --:-:1:-:2      MOV x2, const_a[1];
 02:-:-:-:2      CS2R c3, SR_CLOCKLO;
 --:-:1:-:2      MOV x3, const_a[2];
-02:-:-:-:2      CS2R c4, SR_CLOCKLO;
+02:-:-:-:4      CS2R c4, SR_CLOCKLO;
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;

@@ -35,9 +35,9 @@ for i in range(64):
 out_ = "\n" + "\n".join(SASS_CODE) + "\n"
 </CODE>
 
---:-:0:-:2      CS2R c2, SR_CLOCKLO;
+--:-:0:-:4      CS2R c2, SR_CLOCKLO;
 --:-:-:-:2      BAR.SYNC 0x0;
 
---:-:-:-:4      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:5      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      STG.E.SYS [clock_lo], e1;
 --:-:-:-:2      EXIT;
