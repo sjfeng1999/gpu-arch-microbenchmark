@@ -1,0 +1,65 @@
+<params>
+input, 8
+output, 8
+clock, 8
+</params>
+
+<regs>
+0: input_lo
+1: input_hi
+2: output_lo
+3: output_hi
+4: clock_lo
+5: clock_hi
+6-9: c<1-4>
+10-13: vA, vB, vC, vD
+14-17: e1, e2, e3, e4
+18-20: x1, x2, x3
+24-27: v<0-3>
+</regs>
+
+
+--:-:-:-:2      MOV input_lo, input[0];
+--:-:-:-:2      MOV input_hi, input[1];
+--:-:-:-:2      MOV clock_lo, clock[0];
+--:-:-:-:4      MOV clock_hi, clock[1];
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+--:-:0:-:2      LDS vA, [RZ+0x100];
+01:-:-:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:5      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo], e1;
+
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+--:-:0:-:2      LDS.64 v0, [RZ];
+--:-:1:-:2      LDS.64 v2, [RZ + 0x8];
+03:-:-:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:5      IADD3 e2, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo + 0x4], e2;
+
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+--:-:0:-:2      LDS vA, [RZ+0x0];
+--:-:1:-:2      LDS vB, [RZ+0x80];
+--:-:2:-:2      LDS vC, [RZ+0x100];
+--:-:3:-:2      LDS vD, [RZ+0x180];
+15:-:-:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:5      IADD3 e3, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo + 0x8], e3;
+
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+--:-:0:-:2      LDS vA, [RZ+0x0];
+--:-:1:-:2      LDS vB, [RZ+0x84];
+--:-:2:-:2      LDS vC, [RZ+0x108];
+--:-:3:-:2      LDS vD, [RZ+0x18c];
+15:-:-:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:5      IADD3 e4, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo + 0xc], e4;
+
+--:-:-:-:2      EXIT;
