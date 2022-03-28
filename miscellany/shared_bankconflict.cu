@@ -111,8 +111,8 @@ int main(){
     printf(">>> SASS Level Shared Load BankConflict Result\n");
     printf("        Single           Load [0x100]                   Elapsed \t%3u cycle\n", clock_h[0]);
     printf("        Vector           Load [0x0, 0x4 , 0x8  , 0xc  ] Elapsed \t%3u cycle\n", clock_h[1]);
-    printf("        WithConflict     Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[2]);
-    printf("        WithoutConflict  Load [0x0, 0x80, 0x100, 0x180] Elapsed \t%3u cycle\n", clock_h[3]);
+    printf("        WithConflict     Load [0x0, 0x80, 0x100, 0x180] Elapsed \t%3u cycle\n", clock_h[2]);
+    printf("        WithoutConflict  Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[3]);
     
 
     sharedBankconflictKernel<<<gDim, bDim>>>(input_d, output_d, clock_d);
@@ -122,8 +122,8 @@ int main(){
     printf(">>> CUDA-C Level Shared Load BankConflict Result\n");
     printf("        Single           Load [0x100]                   Elapsed \t%3u cycle\n", clock_h[0]);
     printf("        Vector           Load [0x0, 0x4 , 0x8  , 0xc  ] Elapsed \t%3u cycle\n", clock_h[3]);
-    printf("        WithConflict     Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[1]);
-    printf("        WithoutConflict  Load [0x0, 0x80, 0x100, 0x180] Elapsed \t%3u cycle\n", clock_h[2]);
+    printf("        WithConflict     Load [0x0, 0x80, 0x100, 0x180] Elapsed \t%3u cycle\n", clock_h[1]);
+    printf("        WithoutConflict  Load [0x0, 0x84, 0x108, 0x18c] Elapsed \t%3u cycle\n", clock_h[2]);
 
     return 0;
 }
