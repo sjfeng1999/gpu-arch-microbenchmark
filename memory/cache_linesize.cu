@@ -7,16 +7,39 @@
 #include "utils.cuh"
 
 
-__global__ void linesizeDetectKernel(float* input, float* output, uint* clock){
+__constant__ float cinput[1024];
 
-    uint c[48];
+__global__ void linesizeDetectKernel(float* input, float* output, uint* clock, float* cinput){
+
+    uint c[256];
     float val = 0;
+
     float acc = 0;
-
     c[0] = getClock();
-
     #pragma unroll
-    for (int i = 0; i < 32; ++i){
+    for (int i = 0; i < 256; ++i){
+        asm volatile(
+            "ld.global.cg.b32    %0,    [%1];  \n\t"
+            :"=f"(val):"l"(input):"memory"
+        );
+        c[i+1] = getClock();
+        acc += val;
+        input += 2;
+    }
+    #pragma unroll
+    for (int i = 0; i < 256; ++i){
+        clock[i] = c[i+1] - c[i];
+    }
+    output[0] = acc;
+
+    /////////////////////////////////////////////////////////////////////////
+
+    input += 1024;
+    clock += 512;
+    acc = 0;
+    c[0] = getClock();
+    #pragma unroll
+    for (int i = 0; i < 256; ++i){
         asm volatile(
             "ld.global.ca.f32    %0,    [%1];  \n\t"
             :"=f"(val):"l"(input):"memory"
@@ -25,27 +48,34 @@ __global__ void linesizeDetectKernel(float* input, float* output, uint* clock){
         acc += val;
         input++;
     }
-
     #pragma unroll
-    for (int i = 0; i < 32; ++i){
+    for (int i = 0; i < 256; ++i){
         clock[i] = c[i+1] - c[i];
     }
-    output[0] = acc;
+    output[1] = acc;
 }
 
 
-int detectCacheLinesize(uint* clock, int size){
-    int l1_linesize = 0;
+int detectCacheLinesize(uint* clock, int size, uint gap){
+    int linesize = 0;
     uint last_cycle = clock[0];
+
+    int first = 0;
+    int second = 0;
+
+    // formatArray(clock, 256, 16);
     for (int i = 1; i < size; ++i){
-        // printf("clock %d   latency %u\n", i, clock[i]);
-        if (clock[i] > last_cycle and clock[i] - last_cycle > 10) {
-            l1_linesize = i * 4;
-            break;
+        if (clock[i] > last_cycle and clock[i] - last_cycle > gap) {
+            if (first == 0){
+                first = i;
+            } else {
+                second = i;
+                break;
+            }
         } 
         last_cycle = clock[i];
     }
-    return l1_linesize;
+    return (second - first) * 4;
 }
 
 
@@ -72,7 +102,7 @@ int main(){
     dim3 gDim(1, 1, 1);
     dim3 bDim(1, 1, 1);
 
-    void* kernel_args[] = {&input_d, &output_d, &clock_d};
+    void* kernel_args[] = {&input_d, &output_d, &clock_d, &cinput};
     const char* cubin_name = "../sass_cubin/cache_linesize.cubin";
     const char* kernel_name = "cacheLinesize";
 
@@ -80,17 +110,19 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     printf(">>> SASS Level Cache Linesize Result\n");
-    // printf("        L2 Linesize \t= %3d B\n", clock_h[1]);
-    printf("        L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, size));
+    printf("        Global   L2 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, 512, 40));
+    printf("        Global   L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h + 512,  512, 10));
+    printf("        Constant L2 LineSize \t= %3u B\n", detectCacheLinesize(clock_h + 1024, 512, 100));
+    printf("        Constant L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h + 1536, 512, 10));
 
 
 
-    linesizeDetectKernel<<<gDim, bDim>>>(input_d, output_d, clock_d);
+    linesizeDetectKernel<<<gDim, bDim>>>(input_d, output_d, clock_d, cinput);
     cudaMemcpy(clock_h, clock_d, sizeof(float) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     printf("\n");
     printf(">>> CUDA-C Level Cache Linesize Result\n");
-    // printf("        L2 Linesize \t= %3d B\n", clock_h[1]);
-    printf("        L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, size));
+    printf("        Global   L2 LineSize \t= %3u B\n", detectCacheLinesize(clock_h, 512, 40));
+    printf("        Global   L1 LineSize \t= %3u B\n", detectCacheLinesize(clock_h + 512, 512, 10));
     return 0;
 }

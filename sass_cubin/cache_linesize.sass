@@ -11,10 +11,17 @@ clock, 8
 3: output_hi
 4: clock_lo
 5: clock_hi
-6-48 ~ e<0-35>
-49: vA
-50-96 ~ c<0-35>
+6: vA
+7: e
+8-240 ~ c<0-200>
 </regs>
+
+
+<consts>
+const_a, 1024
+</consts>
+
+
 
 --:-:-:-:2      MOV input_lo, input[0];
 --:-:-:-:2      MOV input_hi, input[1];
@@ -23,28 +30,99 @@ clock, 8
 --:-:-:-:2      MOV clock_lo, clock[0];
 --:-:-:-:4      MOV clock_hi, clock[1];
 
---:-:-:-:2      CS2R c0, SR_CLOCKLO;
 
+--:-:-:-:2      CS2R c0, SR_CLOCKLO;
 <CODE>
 SASS_CODE = []
+loop_size = 200
 
-loop_size = 35
-
-LDG  = "--:-:0:-:2      LDG.E.STRONG.CTA vA, [input_lo+{:}];"
+LDG  = "--:-:0:-:2      LDG.E.STRONG.GPU vA, [input_lo+{:}];"
 CS2R = "01:-:-:-:4      CS2R c{:}, SR_CLOCKLO;"
-IADD = "--:-:-:-:5      IADD3 e{:}, c{:}, -c{:}, RZ;"
-STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e{:};"
-BAR  = "--:-:-:-:2      BAR.SYNC 0x0;"
+IADD = "--:-:-:-:5      IADD3 e, c{:}, -c{:}, RZ;"
+STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e;"
 
 for i in range(loop_size):
     SASS_CODE += [LDG.format(hex(i * 4))]
     SASS_CODE += [CS2R.format(i+1)]
 
-SASS_CODE += [BAR]
 for i in range(loop_size):
-    SASS_CODE += [IADD.format(i, i+1, i)]
+    SASS_CODE += [IADD.format(i+1, i)]
+    SASS_CODE += [STG.format(hex(i*4), i)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+
+
+
+
+
+--:-:-:-:2      IADD3 clock_lo, clock_lo, 0x800, RZ;
+--:-:-:-:2      CS2R c0, SR_CLOCKLO;
+
+<CODE>
+SASS_CODE = []
+loop_size = 200
+
+LDG  = "--:-:0:-:2      LDG.E.STRONG.CTA vA, [input_lo+{:}];"
+CS2R = "01:-:-:-:4      CS2R c{:}, SR_CLOCKLO;"
+IADD = "--:-:-:-:5      IADD3 e, c{:}, -c{:}, RZ;"
+STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e;"
 
 for i in range(loop_size):
+    SASS_CODE += [LDG.format(hex(i * 4))]
+    SASS_CODE += [CS2R.format(i+1)]
+
+for i in range(loop_size):
+    SASS_CODE += [IADD.format(i+1, i)]
+    SASS_CODE += [STG.format(hex(i*4), i)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+
+
+
+--:-:-:-:2      IADD3 clock_lo, clock_lo, 0x800, RZ;
+--:-:-:-:2      CS2R c0, SR_CLOCKLO;
+<CODE>
+SASS_CODE = []
+loop_size = 200
+
+LDC  = "--:-:0:-:2      LDC.E vA, const_a[{:}];"
+CS2R = "01:-:-:-:4      CS2R c{:}, SR_CLOCKLO;"
+IADD = "--:-:-:-:5      IADD3 e, c{:}, -c{:}, RZ;"
+STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e;"
+
+for i in range(loop_size):
+    SASS_CODE += [LDC.format(i)]
+    SASS_CODE += [CS2R.format(i+1)]
+
+for i in range(loop_size):
+    SASS_CODE += [IADD.format(i+1, i)]
+    SASS_CODE += [STG.format(hex(i*4), i)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+
+--:-:-:-:2      IADD3 clock_lo, clock_lo, 0x800, RZ;
+--:-:-:-:2      CS2R c0, SR_CLOCKLO;
+<CODE>
+SASS_CODE = []
+loop_size = 200
+
+LDC  = "--:-:0:-:2      MOV vA, const_a[{:}];"
+CS2R = "01:-:-:-:4      CS2R c{:}, SR_CLOCKLO;"
+IADD = "--:-:-:-:5      IADD3 e, c{:}, -c{:}, RZ;"
+STG  = "--:-:-:-:4      STG.E.SYS [clock_lo+{:}], e;"
+
+for i in range(loop_size):
+    SASS_CODE += [LDC.format(i)]
+    SASS_CODE += [CS2R.format(i+1)]
+
+for i in range(loop_size):
+    SASS_CODE += [IADD.format(i+1, i)]
     SASS_CODE += [STG.format(hex(i*4), i)]
 
 out_ = "\n" + "\n".join(SASS_CODE) + "\n"

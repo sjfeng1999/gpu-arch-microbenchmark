@@ -12,39 +12,49 @@
 2. `cmake .. && make`
 3. `python ../compile_sass.py -arch=<70|75|80>`
 
-## Benchmark
+## Microbenchmark
 
 ### 1. Latency
 
-|Device                      |           |  RTX-2070 |
-|:--------------------------:|:---------:|:---------:|
-|Global Latency              |cycle      | TBD       |
-|L2 Latency                  |cycle      | 236       |
-|L1 Latency                  |cycle      | 32        |  
-|Shared Latency              |cycle      | 23        |  
-|Constant Latency            |cycle      | 448       |
-|Constant L2 Latency         |cycle      | 62        |
-|Constant L1 Latency         |cycle      | 4         |  
+|Device                      |           |  Turing RTX-2070 |
+|:--------------------------:|:---------:|:----------------:|
+|Global Latency              |cycle      | TBD              |
+|L2 Latency                  |cycle      | 236              |
+|L1 Latency                  |cycle      | 32               |  
+|Shared Latency              |cycle      | 23               |  
+|Constant Latency            |cycle      | 448              |
+|Constant L2 Latency         |cycle      | 62               |
+|Constant L1 Latency         |cycle      | 4                |  
 
 - const L1-cache is as fast as register.
 
 ### 2. Cache Linesize
 
 
-|Device                      |           |  RTX-2070 |
-|:--------------------------:|:---------:|:---------:|
-|L2 Linesise                 |bytes      | TBD       |
-|L1 Linesize                 |bytes      | 32        |
-|Constant L2 Linesise        |bytes      | TBD       |
-|Constant L1 Linesize        |bytes      | TBD       |
+|Device                      |           | Turing RTX-2070  |
+|:--------------------------:|:---------:|:----------------:|
+|L2 Linesise                 |bytes      | 64               |
+|L1 Linesize                 |bytes      | 32               |
+|Constant L2 Linesise        |bytes      | 256              |
+|Constant L1 Linesize        |bytes      | 32               |
 
 
 
 ### 3. Reg Bankconflict
 
-| Instruction | conflict | without conflict |
-|:-----------:|:--------:|:----------------:|
-|FFMA         | 1.484    | 1.758            |
+| Instruction |         | conflict | without conflict |
+|:-----------:|:-------:|:--------:|:----------------:|
+|FFMA         |  CPI    | 1.758    | 1.484            |
+
+
+### 4. Shared Bankconflict
+
+| Memory Load            |           | Turing RTX-2070  |
+|:----------------------:|:---------:|:----------------:|
+| Single                 | cycle     |  23              |
+| Vector2 X 2            | cycle     |  27              |
+| Conflict Strided       | cycle     |  41              |
+| Conlict-Free Strided   | cycle     |  32              |
 
 
 
