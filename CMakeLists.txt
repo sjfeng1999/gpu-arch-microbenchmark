@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(gpu-microbenchmark
+project(gpu-arch-microbenchmark
         LANGUAGES CXX CUDA)
 
 enable_language(CUDA)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
 
-set(GPU_ARCH 75)
-set(TARGET_ARCH "-gencode arch=compute_${GPU_ARCH},code=sm_${GPU_ARCH}")
-set(CMAKE_CUDA_FLAGS "${CMAKE_NVCC_FLAGS} -O0 -keep ${TARGET_ARCH}")
+set(TARGET_ARCH "-gencode arch=compute_80,code=sm_80 \
+                 -gencode arch=compute_75,code=sm_75 \
+                 -gencode arch=compute_70,code=sm_70")
+
+set(CMAKE_CUDA_FLAGS "${CMAKE_NVCC_FLAGS} -O0 ${TARGET_ARCH}")
 
 set(MICROBENCHMARK_SRC memory/memory_latency.cu
                        memory/cache_linesize.cu
