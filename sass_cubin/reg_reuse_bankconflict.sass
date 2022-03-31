@@ -25,7 +25,7 @@ clock, 8
 --:-:-:-:2      CS2R c1, SR_CLOCKLO;
 
 <CODE>
-REG_FFMA = "--:-:-:-:1      FFMA v0, v2, v{:}, v0;"
+REG_FFMA = "--:-:-:-:1      FFMA v0, v2.reuse, v{:}, v0;"
 
 SASS_CODE = []
 for i in range(64):

@@ -30,7 +30,7 @@ REG_FFMA = "--:-:-:-:1      FFMA v0, v{:}, v{:}, v0;"
 SASS_CODE = []
 for i in range(64):
     reg = i * 2
-    SASS_CODE += [REG_FFMA.format(i, i + 1)]
+    SASS_CODE += [REG_FFMA.format(reg, reg + 1)]
 
 out_ = "\n" + "\n".join(SASS_CODE) + "\n"
 </CODE>
