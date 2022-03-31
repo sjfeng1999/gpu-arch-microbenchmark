@@ -42,7 +42,8 @@ int main(){
     cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     printf(">>> SASS Level Reg With    BankConflict IPC Result\n");
-    printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        FFMA  per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        IADD3 per \t%.3f cycle\n", static_cast<float>(clock_h[1]) / 64);
     
 
 
@@ -54,7 +55,8 @@ int main(){
     cudaDeviceSynchronize();
     printf("\n");
     printf(">>> SASS Level Reg Without BankConflict IPC Result\n");
-    printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        FFMA  per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        IADD3 per \t%.3f cycle\n", static_cast<float>(clock_h[1]) / 64);
     
 
 
@@ -65,7 +67,8 @@ int main(){
     cudaDeviceSynchronize();
     printf("\n");
     printf(">>> SASS Level Reg Reuse   BankConflict IPC Result\n");
-    printf("        FFMA per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        FFMA  per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        IADD3 per \t%.3f cycle\n", static_cast<float>(clock_h[1]) / 64);
 
     return 0;
 }

@@ -40,4 +40,26 @@ out_ = "\n" + "\n".join(SASS_CODE) + "\n"
 
 --:-:-:-:5      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      STG.E.SYS [clock_lo], e1;
+
+
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+
+<CODE>
+REG_IADD3 = "--:-:-:-:1      IADD3 v0, v2.reuse, v{:}, v0;"
+
+SASS_CODE = []
+for i in range(64):
+    reg = 4 + i * 2
+    SASS_CODE += [REG_IADD3.format(reg)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+--:-:0:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:2      BAR.SYNC 0x0;
+
+--:-:-:-:5      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo + 0x4], e1;
 --:-:-:-:2      EXIT;
