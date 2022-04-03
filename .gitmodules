@@ -1,0 +1,3 @@
+[submodule "turingas"]
+	path = turingas
+	url = git@github.com:daadaada/turingas.git
