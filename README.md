@@ -6,6 +6,9 @@
     > `git clone git@github.com:daadaada/turingas.git`  
     > `python setup.py install`
 
+1. git submodule update 
+2. cd turingas 
+3. python setup.py install
 
 ## Usage    
 1. `mkdir build && cd build`
