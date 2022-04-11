@@ -18,7 +18,8 @@
 
 |Device                      |           |  Turing RTX-2070 |
 |:--------------------------:|:---------:|:----------------:|
-|Global Latency              |cycle      | TBD              |
+|Global Latency              |cycle      | 1000 ~ 1200      |
+|TLB Latency                 |cycle      | 472              |
 |L2 Latency                  |cycle      | 236              |
 |L1 Latency                  |cycle      | 32               |  
 |Shared Latency              |cycle      | 23               |  

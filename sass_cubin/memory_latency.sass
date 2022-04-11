@@ -18,6 +18,8 @@ clock, 8
 21-25 ~ tid, warpid, tid32
 32-35 ~ a0, a1, a2, a3
 36-42 ~ smem1, smem2, smem3, e_s1, e_s2
+43-63 ~ c<5-10>
+64-79 ~ e<5-10>
 </regs>
 
 <consts>
@@ -30,21 +32,25 @@ const_a, 8
 --:-:-:-:4      MOV clock_hi, clock[1];
 
 
-
 --:-:-:-:2      CS2R c1, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.GPU vA, [input_lo];
 01:-:-:-:2      CS2R c2, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.CTA vB, [input_lo+0x4];
 01:-:-:-:2      CS2R c3, SR_CLOCKLO;
 --:-:0:-:2      LDG.E.STRONG.CTA vC, [input_lo+0x8];
-01:-:-:-:4      CS2R c4, SR_CLOCKLO;
+01:-:-:-:2      CS2R c4, SR_CLOCKLO;
+--:-:0:-:2      LDG.E.STRONG.CTA vA, [input_lo+0x10000];
+01:-:-:-:2      CS2R c5, SR_CLOCKLO;
 
 --:-:-:-:4      IADD3 e1, c2, -c1, RZ;
 --:-:-:-:4      IADD3 e2, c3, -c2, RZ;
 --:-:-:-:4      IADD3 e3, c4, -c3, RZ;
+--:-:-:-:4      IADD3 e4, c5, -c4, RZ;
+
 --:-:-:-:4      STG.E.SYS [clock_lo], e1;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x4], e2;
 --:-:-:-:4      STG.E.SYS [clock_lo+0x8], e3;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x1c], e4;
 
 --:-:-:-:6      NOP;
 
