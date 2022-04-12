@@ -70,5 +70,17 @@ int main(){
     printf("        FFMA  per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
     printf("        IADD3 per \t%.3f cycle\n", static_cast<float>(clock_h[1]) / 64);
 
+
+
+    const char* cubin_name4 = "../sass_cubin/reg_reuse_double.cubin";
+    const char* kernel_name4 = "regReuseDouble";
+    launchSassKernel(cubin_name4, kernel_name4, gDim, bDim, 0, kernel_args);
+    cudaMemcpy(clock_h, clock_d, sizeof(uint) * size, cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    printf("\n");
+    printf(">>> SASS Level Reg Reuse   Double       IPC Result\n");
+    printf("        FFMA  per \t%.3f cycle\n", static_cast<float>(clock_h[0]) / 64);
+    printf("        IADD3 per \t%.3f cycle\n", static_cast<float>(clock_h[1]) / 64);
+
     return 0;
 }

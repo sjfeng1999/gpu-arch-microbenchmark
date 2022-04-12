@@ -43,10 +43,10 @@
 
 ### 3. Reg Bankconflict
 
-| Instruction |         | conflict | without conflict | reg reuse |
-|:-----------:|:-------:|:--------:|:----------------:|:---------:|
-|FFMA         |  CPI    | 3.516    | 2.969            |  2.938    |
-|IADD3        |  CPI    | 3.031    | 2.062            |  2.031    |
+| Instruction |         | conflict | without conflict | reg reuse | double reuse |
+|:-----------:|:-------:|:--------:|:----------------:|:---------:|:------------:|
+|FFMA         |  CPI    | 3.516    | 2.969            |  2.938    |  2.938       |
+|IADD3        |  CPI    | 3.031    | 2.062            |  2.031    |  2.031       |
 
 
 ### 4. Shared Bankconflict

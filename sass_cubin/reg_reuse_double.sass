@@ -1,0 +1,65 @@
+<params>
+input, 8
+output, 8
+clock, 8
+</params>
+
+<regs>
+0: input_lo
+1: input_hi
+2: output_lo
+3: output_hi
+4: clock_lo
+5: clock_hi
+6-7: c1, c2
+8-9: e1, e2
+10-224 ~ v<0-192>
+</regs>
+
+
+--:-:-:-:2      MOV input_lo, input[0];
+--:-:-:-:2      MOV input_hi, input[1];
+--:-:-:-:2      MOV clock_lo, clock[0];
+--:-:-:-:4      MOV clock_hi, clock[1];
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+
+<CODE>
+REG_FFMA = "--:-:-:-:1      FFMA v0, v2.reuse, v1.reuse, v{:};"
+
+SASS_CODE = []
+for i in range(64):
+    reg = 4 + i * 2
+    SASS_CODE += [REG_FFMA.format(reg)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+--:-:0:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:2      BAR.SYNC 0x0;
+
+--:-:-:-:5      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo], e1;
+
+
+
+
+--:-:-:-:2      CS2R c1, SR_CLOCKLO;
+
+<CODE>
+REG_IADD3 = "--:-:-:-:1      IADD3 v0, v2.reuse, v1.reuse, v{:};"
+
+SASS_CODE = []
+for i in range(64):
+    reg = 4 + i * 2
+    SASS_CODE += [REG_IADD3.format(reg)]
+
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+
+--:-:0:-:4      CS2R c2, SR_CLOCKLO;
+--:-:-:-:2      BAR.SYNC 0x0;
+
+--:-:-:-:5      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:4      STG.E.SYS [clock_lo + 0x4], e1;
+--:-:-:-:2      EXIT;
