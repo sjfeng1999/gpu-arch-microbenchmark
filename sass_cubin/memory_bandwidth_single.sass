@@ -1,0 +1,121 @@
+<params>
+input, 8
+clock, 8
+</params>
+
+<regs>
+0: input_lo
+1: input_hi
+4: clock_lo
+5: clock_hi
+8-11: v<1-4>
+12-30 ~ c<1-12>
+31-40 ~ e<1-6>
+</regs>
+
+--:-:-:-:2      MOV input_lo, input[0];
+--:-:-:-:2      MOV input_hi, input[1];
+--:-:-:-:2      MOV clock_lo, clock[0];
+--:-:-:-:4      MOV clock_hi, clock[1];
+
+--:-:3:-:1      LDG.E.128.STRONG.CTA v1, [input_lo];        // warmup
+
+
+08:-:-:-:3      CS2R c1, SR_CLOCKLO;
+<CODE>
+LDG_128_to_reg = "--:-:0:-:1 LDG.E.128.STRONG.CTA v1, [input_lo+{:}];"
+
+SASS_CODE = []
+for i in range(1024):
+    pos = hex(i * 16)
+    SASS_CODE += [LDG_128_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+01:-:-:-:6      CS2R c2, SR_CLOCKLO;
+
+--:-:-:-:3      CS2R c3, SR_CLOCKLO;
+<CODE>
+LDS_128_to_reg = "--:-:1:-:1 LDS.128 v1, [RZ+{:}];"
+
+SASS_CODE = []
+for i in range(256):
+    pos = hex(i * 16)
+    SASS_CODE += [LDS_128_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+02:-:-:-:6      CS2R c4, SR_CLOCKLO;
+
+
+
+
+--:-:-:-:3      CS2R c5, SR_CLOCKLO;
+<CODE>
+LDG_64_to_reg = "--:-:0:-:1 LDG.E.64.STRONG.CTA v1, [input_lo+{:}];"
+
+SASS_CODE = []
+for i in range(1024 * 2):
+    pos = hex(i * 8)
+    SASS_CODE += [LDG_64_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+01:-:-:-:6      CS2R c6, SR_CLOCKLO;
+
+--:-:-:-:3      CS2R c7, SR_CLOCKLO;
+<CODE>
+LDS_64_to_reg = "--:-:1:-:1 LDS.64 v1, [RZ+{:}];"
+
+SASS_CODE = []
+for i in range(256 * 2):
+    pos = hex(i * 8)
+    SASS_CODE += [LDS_64_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+02:-:-:-:6      CS2R c8, SR_CLOCKLO;
+
+
+
+
+--:-:-:-:3      CS2R c9, SR_CLOCKLO;
+<CODE>
+LDG_32_to_reg = "--:-:0:-:1 LDG.E.STRONG.CTA v1, [input_lo+{:}];"
+
+SASS_CODE = []
+for i in range(1024 * 4):
+    pos = hex(i * 4)
+    SASS_CODE += [LDG_32_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+01:-:-:-:6      CS2R c10, SR_CLOCKLO;
+
+--:-:-:-:3      CS2R c11, SR_CLOCKLO;
+<CODE>
+LDS_32_to_reg = "--:-:1:-:1 LDS v1, [RZ+{:}];"
+
+SASS_CODE = []
+for i in range(256 * 4):
+    pos = hex(i * 4)
+    SASS_CODE += [LDS_32_to_reg.format(pos)]
+out_ = "\n" + "\n".join(SASS_CODE) + "\n"
+</CODE>
+02:-:-:-:6      CS2R c12, SR_CLOCKLO;
+
+
+
+--:-:-:-:2      IADD3 e1, c2, -c1, RZ;
+--:-:-:-:2      IADD3 e2, c4, -c3, RZ;
+--:-:-:-:2      IADD3 e3, c6, -c5, RZ;
+--:-:-:-:2      IADD3 e4, c8, -c7, RZ;
+--:-:-:-:2      IADD3 e5, c10, -c9, RZ;
+--:-:-:-:2      IADD3 e6, c12, -c11, RZ;
+
+--:-:-:-:4      STG.E.SYS [clock_lo], e1;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x4], e2;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x8], e3;
+--:-:-:-:4      STG.E.SYS [clock_lo+0xc], e4;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x10], e5;
+--:-:-:-:4      STG.E.SYS [clock_lo+0x14], e6;
+
+--:-:-:-:2      EXIT;
+
+
+

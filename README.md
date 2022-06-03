@@ -14,9 +14,9 @@
 
 ## Microbenchmark
 
-### 1. Latency
+### 1. Memory Latency
 
-|Device                      |           |  Turing RTX-2070 |
+|Device                      |Latency    |  Turing RTX-2070 |
 |:--------------------------:|:---------:|:----------------:|
 |Global Latency              |cycle      | 1000 ~ 1200      |
 |TLB Latency                 |cycle      | 472              |
@@ -29,29 +29,41 @@
 
 - const L1-cache is as fast as register.
 
-### 2. Cache Linesize
+### 2. Memory Bandwidth  
 
+1. Single Thread
+   
+|Device          | Bandwidth   | Turing RTX-2070 |
+|:--------------:|:-----------:|:---------------:|
+|Global  LDG.128 | GB/s        |8.12             |
+|Global  LDG.64  | GB/s        |8.78             |
+|Global  LDG.32  | GB/s        |4.18             |
+|Shared  LDS.128 | GB/s        |19.12            |
+|Shared  LDS.64  | GB/s        |8.51             |
+|Shared  LDS.32  | GB/s        |4.21             |
 
-|Device                      |           | Turing RTX-2070  |
+- LDG.64 > LDG.128 ?
+
+### 3. Cache Linesize
+
+|Device                      | Linesize  | Turing RTX-2070  |
 |:--------------------------:|:---------:|:----------------:|
 |L2 Linesise                 |bytes      | 64               |
 |L1 Linesize                 |bytes      | 32               |
 |Constant L2 Linesise        |bytes      | 256              |
 |Constant L1 Linesize        |bytes      | 32               |
 
+### 4. Reg Bankconflict
 
-
-### 3. Reg Bankconflict
-
-| Instruction |         | conflict | without conflict | reg reuse | double reuse |
+| Instruction |CPI      | conflict | without conflict | reg reuse | double reuse |
 |:-----------:|:-------:|:--------:|:----------------:|:---------:|:------------:|
-|FFMA         |  CPI    | 3.516    | 2.969            |  2.938    |  2.938       |
-|IADD3        |  CPI    | 3.031    | 2.062            |  2.031    |  2.031       |
+|FFMA         |  cycle  | 3.516    | 2.969            |  2.938    |  2.938       |
+|IADD3        |  cycle  | 3.031    | 2.062            |  2.031    |  2.031       |
 
 
-### 4. Shared Bankconflict
+### 5. Shared Bankconflict
 
-| Memory Load            |           | Turing RTX-2070  |
+| Memory Load            | Latency   | Turing RTX-2070  |
 |:----------------------:|:---------:|:----------------:|
 | Single                 | cycle     |  23              |
 | Vector2 X 2            | cycle     |  27              |
@@ -62,7 +74,7 @@
 
 ## Roadmap
 
-- [ ] memory bandwidth
+- [ ] total memory bandwidth
 - [ ] warp schedule
 - [ ] L1/L2 cache n-way k-set
 

@@ -14,6 +14,7 @@ set(TARGET_ARCH "-gencode arch=compute_80,code=sm_80 \
 set(CMAKE_CUDA_FLAGS "${CMAKE_NVCC_FLAGS} -O0 ${TARGET_ARCH}")
 
 set(MICROBENCHMARK_SRC memory/memory_latency.cu
+                       memory/memory_bandwidth.cu
                        memory/cache_linesize.cu
                        miscellany/reg_bankconflict.cu
                        miscellany/shared_bankconflict.cu

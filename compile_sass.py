@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
     ARCH_LIST = [70, 75, 80]
     KERNEL_LIST = ["memory_latency", 
+                   "memory_bandwidth_single",
                    "cache_linesize", 
                    "reg_reuse_double", "reg_reuse_bankconflict", "reg_with_bankconflict", "reg_without_bankconflict",
                    "shared_bankconflict",
@@ -40,3 +41,4 @@ if __name__ == "__main__":
         print(f"    compile kernel: {target_kernel}")
         os.system(compile_command)
     print("<<<")
+    
