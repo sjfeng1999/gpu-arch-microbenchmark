@@ -10,48 +10,47 @@
 ## Usage    
 1. `mkdir build && cd build`
 2. `cmake .. && make`
-3. `python ../compile_sass.py -arch=<70|75|80>`
+3. `python ../compile_sass.py -arch=(70|75|80)`
+4. `./(memory_latency|reg_bankconflict|...)`
 
 ## Microbenchmark
 
 ### 1. Memory Latency
 
-|Device                      |Latency    |  Turing RTX-2070 |
-|:--------------------------:|:---------:|:----------------:|
-|Global Latency              |cycle      | 1000 ~ 1200      |
-|TLB Latency                 |cycle      | 472              |
-|L2 Latency                  |cycle      | 236              |
-|L1 Latency                  |cycle      | 32               |  
-|Shared Latency              |cycle      | 23               |  
-|Constant Latency            |cycle      | 448              |
-|Constant L2 Latency         |cycle      | 62               |
-|Constant L1 Latency         |cycle      | 4                |  
+|Device                      |Latency    |Turing RTX-2070 (TU104)|
+|:--------------------------:|:---------:|:---------------------:|
+|Global Latency              |cycle      | 1000 ~ 1200           |
+|TLB Latency                 |cycle      | 472                   |
+|L2 Latency                  |cycle      | 236                   |
+|L1 Latency                  |cycle      | 32                    |  
+|Shared Latency              |cycle      | 23                    |  
+|Constant Latency            |cycle      | 448                   |
+|Constant L2 Latency         |cycle      | 62                    |
+|Constant L1 Latency         |cycle      | 4                     |  
 
 - const L1-cache is as fast as register.
 
 ### 2. Memory Bandwidth  
 
-1. Single Thread
-   
+1. memory bandwidth within one thread
+
 |Device          | Bandwidth   | Turing RTX-2070 |
 |:--------------:|:-----------:|:---------------:|
-|Global  LDG.128 | GB/s        |8.12             |
-|Global  LDG.64  | GB/s        |8.78             |
-|Global  LDG.32  | GB/s        |4.18             |
-|Shared  LDS.128 | GB/s        |19.12            |
-|Shared  LDS.64  | GB/s        |8.51             |
-|Shared  LDS.32  | GB/s        |4.21             |
-
-- LDG.64 > LDG.128 ?
+|Global  LDG.128 | GB/s        |194.12           |
+|Global  LDG.64  | GB/s        |140.77           |
+|Global  LDG.32  | GB/s        |54.18            |
+|Shared  LDS.128 | GB/s        |152.96           |
+|Shared  LDS.64  | GB/s        |30.58            |
+|Shared  LDS.32  | GB/s        |13.32            |
 
 ### 3. Cache Linesize
 
-|Device                      | Linesize  | Turing RTX-2070  |
-|:--------------------------:|:---------:|:----------------:|
-|L2 Linesise                 |bytes      | 64               |
-|L1 Linesize                 |bytes      | 32               |
-|Constant L2 Linesise        |bytes      | 256              |
-|Constant L1 Linesize        |bytes      | 32               |
+|Device                      | Linesize  | Turing RTX-2070(TU104)|
+|:--------------------------:|:---------:|:---------------------:|
+|L2 Linesise                 |bytes      | 64                    |
+|L1 Linesize                 |bytes      | 32                    |
+|Constant L2 Linesise        |bytes      | 256                   |
+|Constant L1 Linesize        |bytes      | 32                    |
 
 ### 4. Reg Bankconflict
 
@@ -63,18 +62,17 @@
 
 ### 5. Shared Bankconflict
 
-| Memory Load            | Latency   | Turing RTX-2070  |
-|:----------------------:|:---------:|:----------------:|
-| Single                 | cycle     |  23              |
-| Vector2 X 2            | cycle     |  27              |
-| Conflict Strided       | cycle     |  41              |
-| Conlict-Free Strided   | cycle     |  32              |
+| Memory Load            | Latency   | Turing RTX-2070 (TU104)|
+|:----------------------:|:---------:|:----------------------:|
+| Single                 | cycle     |  23                    |
+| Vector2 X 2            | cycle     |  27                    |
+| Conflict Strided       | cycle     |  41                    |
+| Conlict-Free Strided   | cycle     |  32                    |
 
 
 
 ## Roadmap
 
-- [ ] total memory bandwidth
 - [ ] warp schedule
 - [ ] L1/L2 cache n-way k-set
 

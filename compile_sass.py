@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     ARCH_LIST = [70, 75, 80]
     KERNEL_LIST = ["memory_latency", 
-                   "memory_bandwidth_single",
+                   "memory_bandwidth_thread", "memory_bandwidth_block",
                    "cache_linesize", 
                    "reg_reuse_double", "reg_reuse_bankconflict", "reg_with_bankconflict", "reg_without_bankconflict",
                    "shared_bankconflict",
