@@ -11,11 +11,12 @@ set(TARGET_ARCH "-gencode arch=compute_80,code=sm_80 \
                  -gencode arch=compute_75,code=sm_75 \
                  -gencode arch=compute_70,code=sm_70")
 
-set(CMAKE_CUDA_FLAGS "${CMAKE_NVCC_FLAGS} -O0 ${TARGET_ARCH}")
+set(CMAKE_CUDA_FLAGS "${CMAKE_NVCC_FLAGS} ${TARGET_ARCH}")
 
 set(MICROBENCHMARK_SRC memory/memory_latency.cu
                        memory/memory_bandwidth.cu
                        memory/cache_linesize.cu
+                       memory/global_memory_bandwidth.cu
                        miscellany/reg_bankconflict.cu
                        miscellany/shared_bankconflict.cu
                        schedule/warp_schedule.cu)
