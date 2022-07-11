@@ -6,20 +6,27 @@
 #include "cuda.h"
 #include "utils.cuh"
 
-constexpr int kGridDimX   = 64;
-constexpr int kBlockDimX  = 128;
-constexpr int kLoopSize   = 32 * 1024;
-constexpr size_t kGlobalSize = 512 * 1024 * 1024;
-constexpr size_t kSharedSize = 1024 * 1024;
-constexpr float kCopySize = (float)kLoopSize * kGridDimX * kBlockDimX * sizeof(float);
+constexpr int kGridDimX      = 64;
+constexpr int kBlockDimX     = 256;
+constexpr int kWarpCount     = kBlockDimX / kWarpSize;
+constexpr int kLoopSize      = 4 * 1024;
+constexpr size_t kGlobalSize = 256 * 1024 * 1024;
+constexpr float kCopySize    = (float)kLoopSize * kGridDimX * kBlockDimX * sizeof(float);
 
+template<int GroupSize, int StrideSize>
 __global__
-void copyContinuous32bKernel(float* input, float* output) {
-    const int kLine = kGridDimX * kBlockDimX;
+void copyGroup32bKernel(float* input, float* output) {
+    const int kWarpWorkload = 32 + kWarpSize / GroupSize * StrideSize;
+    const int kBlockWorkload = kWarpCount * kWarpWorkload;
+    const int kLine = kGridDimX * kBlockWorkload;
 
     int ctaid = blockIdx.x;
     int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX + tid;
+    int warpid = tid / 32;
+    int laneid = tid % 32;
+    int groupid = laneid / GroupSize;
+    int offset = ctaid * kBlockWorkload + warpid * kWarpWorkload + laneid + groupid * StrideSize;
+
     float* thread_input = input + offset;
     float* thread_output = output + offset;
 
@@ -31,31 +38,20 @@ void copyContinuous32bKernel(float* input, float* output) {
 }
 
 
+template<int GroupSize, int StrideSize>
 __global__
-void copyStride32bKernel(float* input, float* output) {
-    const int kLine = 2 * kGridDimX * kBlockDimX;
+void copyGroup64bKernel(float2* input, float2* output) {
+    const int kWarpWorkload = 32 + kWarpSize / GroupSize * StrideSize;
+    const int kBlockWorkload = kWarpCount * kWarpWorkload;
+    const int kLine = kGridDimX * kBlockWorkload;
 
     int ctaid = blockIdx.x;
     int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX * 2 + tid * 2;
-    float* thread_input = input + offset;
-    float* thread_output = output + offset;
+    int warpid = tid / 32;
+    int laneid = tid % 32;
+    int groupid = laneid / GroupSize;
+    int offset = ctaid * kBlockWorkload + warpid * kWarpWorkload + laneid + groupid * StrideSize;
 
-    for (int i = 0; i < kLoopSize; ++i) {
-        *thread_output = *thread_input;
-        thread_input += kLine;
-        thread_output += kLine;
-    }
-}
-
-
-__global__
-void copyContinuous64bKernel(float2* input, float2* output) {
-    const int kLine = kGridDimX * kBlockDimX;
-
-    int ctaid = blockIdx.x;
-    int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX + tid;
     float2* thread_input = input + offset;
     float2* thread_output = output + offset;
 
@@ -67,30 +63,20 @@ void copyContinuous64bKernel(float2* input, float2* output) {
 }
 
 
+template<int GroupSize, int StrideSize>
 __global__
-void copyStride64bKernel(float2* input, float2* output) {
-    const int kLine = 2 * kGridDimX * kBlockDimX;
+void copyGroup128bKernel(float4* input, float4* output) {
+    const int kWarpWorkload = 32 + kWarpSize / GroupSize * StrideSize;
+    const int kBlockWorkload = kWarpCount * kWarpWorkload;
+    const int kLine = kGridDimX * kBlockWorkload;
 
     int ctaid = blockIdx.x;
     int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX * 2 + tid * 2;
-    float2* thread_input = input + offset;
-    float2* thread_output = output + offset;
+    int warpid = tid / 32;
+    int laneid = tid % 32;
+    int groupid = laneid / GroupSize;
+    int offset = ctaid * kBlockWorkload + warpid * kWarpWorkload + laneid + groupid * StrideSize;
 
-    for (int i = 0; i < (kLoopSize / 2); ++i) {
-        *thread_output = *thread_input;
-        thread_input += kLine;
-        thread_output += kLine;
-    }
-}
-
-__global__
-void copyContinuous128bKernel(float4* input, float4* output) {
-    const int kLine = kGridDimX * kBlockDimX;
-
-    int ctaid = blockIdx.x;
-    int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX + tid;
     float4* thread_input = input + offset;
     float4* thread_output = output + offset;
 
@@ -101,24 +87,16 @@ void copyContinuous128bKernel(float4* input, float4* output) {
     }
 }
 
-
-__global__
-void copyStride128bKernel(float4* input, float4* output) {
-    const int kLine = 2 * kGridDimX * kBlockDimX;
-
-    int ctaid = blockIdx.x;
-    int tid = threadIdx.x;
-    int offset = ctaid * kBlockDimX * 2 + tid * 2;
-    float4* thread_input = input + offset;
-    float4* thread_output = output + offset;
-
-    for (int i = 0; i < (kLoopSize / 4); ++i) {
-        *thread_output = *thread_input;
-        thread_input += kLine;
-        thread_output += kLine;
-    }
+template<typename Func>
+float getElapsed(Func fn, cudaEvent_t start, cudaEvent_t stop) {
+    float elapsed = 0;
+    cudaEventRecord(start);
+    fn();
+    cudaEventRecord(stop);
+    cudaDeviceSynchronize();
+    cudaEventElapsedTime(&elapsed, start, stop);
+    return kCopySize / elapsed / 1024 / 1024;
 }
-
 
 int main() {
     float* input_d;
@@ -131,62 +109,60 @@ int main() {
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    float elapsed = 0;
-    float bandwidth = 0;
-
     dim3 gDim(kGridDimX);
     dim3 bDim(kBlockDimX);
 
-    cudaEventRecord(start);
-    copyContinuous32bKernel<<<gDim, bDim>>>(input_d, output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.32                   \t%.2f GB/s\n", bandwidth); 
+    printf(" Different access pattern on Global Memory\n");
 
+    auto fn1 = [=]() { copyGroup32bKernel<1, 0><<<gDim, bDim>>>(input_d, output_d);};
+    printf("    LDG.32                   \t%.2f GB/s\n", getElapsed(fn1, start, stop)); 
 
-    cudaEventRecord(start);
-    copyStride32bKernel<<<gDim, bDim>>>(input_d, output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.32 Stride 32b        \t%.2f GB/s\n", bandwidth); 
+    auto fn2 = [=]() { copyGroup32bKernel<1, 1><<<gDim, bDim>>>(input_d, output_d);};
+    printf("    LDG.32 g1s1              \t%.2f GB/s\n", getElapsed(fn2, start, stop)); 
 
+    auto fn9 = [=]() { copyGroup32bKernel<2, 2><<<gDim, bDim>>>(input_d, output_d);};
+    printf("    LDG.32 g2s2              \t%.2f GB/s\n", getElapsed(fn9, start, stop)); 
 
-    cudaEventRecord(start);
-    copyContinuous64bKernel<<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.64                   \t%.2f GB/s\n", bandwidth); 
+    auto fn10 = [=]() { copyGroup32bKernel<4, 4><<<gDim, bDim>>>(input_d, output_d);};
+    printf("    LDG.32 g4s4              \t%.2f GB/s\n", getElapsed(fn10, start, stop)); 
 
-    cudaEventRecord(start);
-    copyStride64bKernel<<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.64 Stride 64b        \t%.2f GB/s\n", bandwidth); 
+    auto fn8 = [=]() { copyGroup32bKernel<8, 8><<<gDim, bDim>>>(input_d, output_d);};
+    printf("    LDG.32 g8s8              \t%.2f GB/s\n", getElapsed(fn8, start, stop)); 
 
-    cudaEventRecord(start);
-    copyContinuous128bKernel<<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.128                   \t%.2f GB/s\n", bandwidth); 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    
-    cudaEventRecord(start);
-    copyContinuous128bKernel<<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);
-    cudaEventRecord(stop);
-    cudaDeviceSynchronize();
-    cudaEventElapsedTime(&elapsed, start, stop);
-    bandwidth = kCopySize / elapsed / 1024 / 1024;
-    printf("LDG.128  Stride 128b       \t%.2f GB/s\n", bandwidth); 
+    auto fn3 = [=]() { copyGroup64bKernel<1, 0><<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);};
+    printf("    LDG.64                   \t%.2f GB/s\n", getElapsed(fn3, start, stop)); 
+
+    auto fn4 = [=]() { copyGroup64bKernel<1, 1><<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);};
+    printf("    LDG.64 g1s1              \t%.2f GB/s\n", getElapsed(fn4, start, stop)); 
+
+    auto fn11 = [=]() { copyGroup64bKernel<2, 2><<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);};
+    printf("    LDG.64 g2s2              \t%.2f GB/s\n", getElapsed(fn11, start, stop)); 
+
+    auto fn12 = [=]() { copyGroup64bKernel<4, 4><<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);};
+    printf("    LDG.64 g4s4              \t%.2f GB/s\n", getElapsed(fn12, start, stop)); 
+
+    auto fn13 = [=]() { copyGroup64bKernel<8, 8><<<gDim, bDim>>>((float2*)input_d, (float2*)output_d);};
+    printf("    LDG.64 g8s8              \t%.2f GB/s\n", getElapsed(fn13, start, stop)); 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    auto fn5 = [=]() { copyGroup128bKernel<1, 0><<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);};
+    printf("    LDG.128                  \t%.2f GB/s\n", getElapsed(fn5, start, stop)); 
+
+    auto fn6 = [=]() { copyGroup128bKernel<1, 1><<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);};
+    printf("    LDG.128 g1s1             \t%.2f GB/s\n", getElapsed(fn6, start, stop)); 
+
+    auto fn7 = [=]() { copyGroup128bKernel<2, 2><<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);};
+    printf("    LDG.128 g2s2              \t%.2f GB/s\n", getElapsed(fn7, start, stop)); 
+
+    auto fn14 = [=]() { copyGroup128bKernel<4, 4><<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);};
+    printf("    LDG.128 g4s4              \t%.2f GB/s\n", getElapsed(fn14, start, stop)); 
+
+    auto fn15 = [=]() { copyGroup128bKernel<8, 8><<<gDim, bDim>>>((float4*)input_d, (float4*)output_d);};
+    printf("    LDG.128 g8s8              \t%.2f GB/s\n", getElapsed(fn15, start, stop)); 
+
 
     cudaFree(input_d);
     cudaFree(output_d);

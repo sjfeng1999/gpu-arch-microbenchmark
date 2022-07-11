@@ -43,6 +43,26 @@
 |Shared  LDS.64  | GB/s        |30.58            |
 |Shared  LDS.32  | GB/s        |13.32            |
 
+1. global memory bandwidth within (64 block * 256 thread)
+
+|Device                      | Bandwidth   | Turing RTX-2070 |
+|:--------------------------:|:-----------:|:---------------:|
+|LDG.32                      | GB/s        |246.65           |
+|LDG.32 Group1 Stride1       | GB/s        |118.73(2X)       |
+|LDG.32 Group2 Stride2       | GB/s        |119.08(2X)       |
+|LDG.32 Group4 Stride4       | GB/s        |117.11(2X)       |
+|LDG.32 Group8 Stride8       | GB/s        |336.27           |
+|LDG.64                      | GB/s        |379.24           |
+|LDG.64 Group1 Stride1       | GB/s        |126.40(2X)       |
+|LDG.64 Group2 Stride2       | GB/s        |124.51(2X)       |
+|LDG.64 Group4 Stride4       | GB/s        |398.84           |
+|LDG.64 Group8 Stride8       | GB/s        |371.28           |
+|LDG.128                     | GB/s        |391.83           |
+|LDG.128 Group1 Stride1      | GB/s        |125.25(2X)       |
+|LDG.128 Group2 Stride2      | GB/s        |402.55           |
+|LDG.128 Group4 Stride4      | GB/s        |394.22           |
+|LDG.128 Group8 Stride8      | GB/s        |396.10           |
+
 ### 3. Cache Linesize
 
 |Device                      | Linesize  | Turing RTX-2070(TU104)|
@@ -69,6 +89,8 @@
 | Conflict Strided       | cycle     |  41                    |
 | Conlict-Free Strided   | cycle     |  32                    |
 
+
+## Instruction Efficiency
 
 
 ## Roadmap
